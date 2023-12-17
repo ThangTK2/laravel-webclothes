@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\RoleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,4 +27,6 @@ Route::get('/home', function () {
 });
 
 Auth::routes();
+
+Route::resource('roles', RoleController::class); //Route::resource: Đây là một phương thức của Laravel để tạo ra các tuyến RESTful
 
