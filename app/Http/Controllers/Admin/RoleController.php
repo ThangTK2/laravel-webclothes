@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Roles\CreateRoleRequest;
+use App\Models\Permisson;
+use App\Models\Role;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
@@ -14,7 +17,8 @@ class RoleController extends Controller
      */
     public function index()
     {
-        //
+        $roles = Role::latest('id')->paginate(3);
+        return view('admin.roles.index', compact('roles'));
     }
 
     /**
@@ -24,7 +28,8 @@ class RoleController extends Controller
      */
     public function create()
     {
-        //
+        $permissions = Permisson::all()->groupBy('group');
+        return view('admin.roles.create', compact('permissions'));
     }
 
     /**
@@ -33,9 +38,12 @@ class RoleController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateRoleRequest $request)
     {
-        //
+        $dataCreate = $request->all();
+        $role = Role::create($dataCreate);  //:: static function
+        $role->permissions()->attach($dataCreate['permission_ids']);
+        return to_route('roles.index')->with(['message' => 'Create successfully']);
     }
 
     /**
@@ -57,7 +65,9 @@ class RoleController extends Controller
      */
     public function edit($id)
     {
-        //
+        $role = Role::with('permissions')->findOrFail($id);
+        $permissions = Permisson::all()->groupBy('group');
+        return view('admin.roles.edit', compact('role','permissions'));
     }
 
     /**
@@ -69,7 +79,11 @@ class RoleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $role = Role::findOrFail($id);
+        $dataUpdate = $request->all();
+        $role->update($dataUpdate);
+        $role->permissions()->sync($dataUpdate['permission_ids']);
+        return to_route('roles.index')->with(['message' => 'Update successfully']);
     }
 
     /**
@@ -80,6 +94,7 @@ class RoleController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Role::destroy($id);
+        return to_route('roles.index')->with(['message' => 'Delete successfully']);
     }
 }
